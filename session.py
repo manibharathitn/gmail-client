@@ -1,7 +1,13 @@
-from sqlalchemy import create_engine, sessionmaker
-from sqlalchemy.orm import scoped_session
+import os
 
-engine = create_engine('postgresql://user:password@localhost/dbname')
+from dotenv import load_dotenv
+from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker
+
+# Load the .env file
+load_dotenv()
+
+engine = create_engine(os.getenv('DATABASE_URL'))
 session_factory = sessionmaker(bind=engine)
 
 # scoped_session creates a new Session that is scoped to the current thread of execution

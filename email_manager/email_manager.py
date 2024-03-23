@@ -1,18 +1,17 @@
-import logging
+import base64
+import os.path
+import pickle
 from datetime import datetime
 
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-import pickle
-import os.path
-import base64
 from bs4 import BeautifulSoup
+from google.auth.transport.requests import Request
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+from logger import logger
 from models.email import Email
 
-from logger import logger
 
 class EmailManager:
     SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
@@ -65,9 +64,10 @@ class EmailManager:
                 soup = BeautifulSoup(decoded_data, "lxml")
                 body = soup.body()
 
-                email = Email(msg_id=msg['id'], subject=subject, sender=sender, content=body, recipient=recipient, cc=cc,
+                email = self._init_email(msg_id=msg['id'], subject=subject, sender=sender, content=body, recipient=recipient, cc=cc,
                               date_received=date_received, synced_at=datetime.now())
-                email_list.append(email)
+
+                email.save()
 
                 logger.info(f"Subject: {subject}")
                 logger.info(f"From: {sender}")
@@ -111,6 +111,18 @@ class EmailManager:
                 logger.info(f"Label ID: {label['id']}, Label Name: {label['name']}")
         except HttpError as error:
             logger.error(f'An error occurred: {error}')
+
+    def _init_email(self, msg_id, subject, sender, content, recipient, cc, date_received, synced_at):
+        email = Email.get_by_msg_id(msg_id) or Email()
+        email.msg_id = msg_id
+        email.subject = subject
+        email.sender = sender
+        email.content = str(content)
+        email.recipient = recipient
+        email.cc = cc
+        email.date_received = date_received
+        email.synced_at = synced_at
+        return email
 
 if __name__ == '__main__':
     reader = EmailManager()

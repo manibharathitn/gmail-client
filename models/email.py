@@ -1,9 +1,10 @@
-from sqlalchemy import create_engine, Column, String, DateTime, or_, and_
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import Column, String, DateTime, and_
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
+from session import Session
+session = Session()
 
 class Email(Base):
     __tablename__ = 'emails'
@@ -18,7 +19,7 @@ class Email(Base):
     cc = Column(String)
 
     @classmethod
-    def filter(cls, session, **kwargs):
+    def filter(cls, **kwargs):
         filters = []
         for key, value in kwargs.items():
             if isinstance(value, dict):
@@ -32,3 +33,11 @@ class Email(Base):
             else:
                 filters.append(getattr(cls, key) == value)
         return session.query(cls).filter(and_(*filters))
+
+    @classmethod
+    def get_by_msg_id(cls, msg_id):
+        return session.query(cls).filter_by(msg_id=msg_id).first()
+
+    def save(self):
+        session.add(self)
+        session.commit()
