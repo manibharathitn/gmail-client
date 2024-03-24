@@ -14,7 +14,7 @@ from models.email import Email
 
 
 class EmailManager:
-    SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+    SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
 
     def __init__(self, credentials_file='../credentials.json', token_file='../token.pickle'):
         self.credentials_file = credentials_file

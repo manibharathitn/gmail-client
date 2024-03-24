@@ -1,3 +1,6 @@
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
+
 from sqlalchemy import Column, String, DateTime, and_
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -5,6 +8,8 @@ Base = declarative_base()
 
 from session import Session
 session = Session()
+
+
 
 class Email(Base):
     __tablename__ = 'emails'
@@ -29,10 +34,12 @@ class Email(Base):
                     elif op == 'not':
                         filters.append(getattr(cls, key) != v)
                     elif op == 'lt':
+                        filters.append(getattr(cls, key) > v)
+                    elif op == 'gt':
                         filters.append(getattr(cls, key) < v)
             else:
                 filters.append(getattr(cls, key) == value)
-        return session.query(cls).filter(and_(*filters))
+        return session.query(cls.msg_id).filter(and_(*filters))
 
     @classmethod
     def get_by_msg_id(cls, msg_id):
