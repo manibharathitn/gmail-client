@@ -1,3 +1,13 @@
+"""
+email_manager.py
+
+This module contains the EmailManager class which is responsible for interacting with the Gmail API.
+
+Classes:
+    EmailManager: Manages the interaction with the Gmail API.
+
+"""
+
 import base64
 import os.path
 import pickle
@@ -14,14 +24,35 @@ from models.email import Email
 
 
 class EmailManager:
+    """
+    Manages the interaction with the Gmail API.
+
+    Attributes:
+        credentials_file (str): The path to the file containing the credentials.
+        token_file (str): The path to the file containing the token.
+    """
+
     SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
 
     def __init__(self, credentials_file='../credentials.json', token_file='../token.pickle'):
+        """
+        Initializes the EmailManager with the given credentials and token files.
+
+        Args:
+            credentials_file (str): The path to the file containing the credentials.
+            token_file (str): The path to the file containing the token.
+        """
         self.credentials_file = credentials_file
         self.token_file = token_file
         self.creds = self.get_credentials()
 
     def get_credentials(self):
+        """
+        Retrieves the credentials for the Gmail API or creates one.
+
+        Returns:
+            The credentials for the Gmail API.
+        """
         creds = None
         if os.path.exists(self.token_file):
             with open(self.token_file, 'rb') as token:
@@ -40,6 +71,9 @@ class EmailManager:
         return creds
 
     def sync_emails(self):
+        """
+        Syncs the emails from the Gmail API and saves them to the database.
+        """
         service = build('gmail', 'v1', credentials=self.creds)
         result = service.users().messages().list(userId='me').execute()
         messages = result.get('messages')
@@ -80,6 +114,12 @@ class EmailManager:
                 logger.error(f"An error occurred: {e}")
 
     def mark_as_read(self, msg_id):
+        """
+        Marks the email with the given message ID as read.
+
+        Args:
+            msg_id (str): The message ID of the email to mark as read.
+        """
         try:
             service = build('gmail', 'v1', credentials=self.creds)
             service.users().messages().modify(
@@ -91,6 +131,13 @@ class EmailManager:
             logger.error(f'An error occurred: {error}')
 
     def move_to_label(self, msg_id, new_label_id):
+        """
+        Moves the email with the given message ID to the label with the given label ID.
+
+        Args:
+            msg_id (str): The message ID of the email to move.
+            new_label_id (str): The ID of the label to move the email to.
+        """
         try:
             service = build('gmail', 'v1', credentials=self.creds)
             service.users().messages().modify(
@@ -102,6 +149,9 @@ class EmailManager:
             logger.error(f'An error occurred: {error}')
 
     def get_labels(self):
+        """
+        Retrieves and logs the labels from the Gmail API.
+        """
         try:
             service = build('gmail', 'v1', credentials=self.creds)
             result = service.users().labels().list(userId='me').execute()
@@ -113,6 +163,11 @@ class EmailManager:
             logger.error(f'An error occurred: {error}')
 
     def _init_email(self, msg_id, subject, sender, content, recipient, cc, date_received, synced_at):
+        """
+        Upserts an Email object with the given attributes based on msg_id.
+        Returns:
+            The initialized/existing Email object.
+        """
         email = Email.get_by_msg_id(msg_id) or Email()
         email.msg_id = msg_id
         email.subject = subject
@@ -123,8 +178,3 @@ class EmailManager:
         email.date_received = date_received
         email.synced_at = synced_at
         return email
-
-if __name__ == '__main__':
-    reader = EmailManager()
-    reader.sync_emails()
-    # reader.get_labels()
