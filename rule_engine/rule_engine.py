@@ -113,13 +113,15 @@ class RuleEngine:
             # if collection_predicate is all, then we need to take intersection of all the filtered email ids
             # if collection_predicate is any, then we need to take union of all the filtered email ids
             logger.info(f"field_name: {field_name}, predicate: {predicate}, value: {value}  Filtered email ids: {email_msg_ids}")
-            if self.collection_predicate == 'all':
-                if self.filtered_email_ids is None:
-                    self.filtered_email_ids = set(email_msg_ids)
-                else:
-                    self.filtered_email_ids = self.filtered_email_ids.intersection(email_msg_ids)
+            # Initialize self.filtered_email_ids if it's None
+            if self.filtered_email_ids is None:
+                self.filtered_email_ids = set(email_msg_ids)
             else:
-                self.filtered_email_ids = self.filtered_email_ids.union(email_msg_ids)
+                # Perform the appropriate operation based on self.collection_predicate
+                if self.collection_predicate == 'all':
+                    self.filtered_email_ids &= set(email_msg_ids)  # Intersection operation
+                else:
+                    self.filtered_email_ids |= set(email_msg_ids)  # Union operation
         return self
 
     def perform_action(self, email_manager):
