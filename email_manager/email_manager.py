@@ -130,7 +130,7 @@ class EmailManager:
         except HttpError as error:
             logger.error(f'An error occurred: {error}')
 
-    def move_to_label(self, msg_id, new_label_id):
+    def move_to_label(self, msg_id, new_label_name):
         """
         Moves the email with the given message ID to the label with the given label ID.
 
@@ -139,6 +139,7 @@ class EmailManager:
             new_label_id (str): The ID of the label to move the email to.
         """
         try:
+            new_label_id = self.get_label_id(new_label_name)
             service = build('gmail', 'v1', credentials=self.creds)
             service.users().messages().modify(
                 userId='me',
@@ -147,6 +148,26 @@ class EmailManager:
             ).execute()
         except HttpError as error:
             logger.error(f'An error occurred: {error}')
+
+    def get_label_id(self, label_name):
+        """
+        Retrieves the ID of the label with the given name from the Gmail API.
+
+        Args:
+            label_name (str): The name of the label.
+
+        Returns:
+            The ID of the label, or None if no such label exists.
+        """
+        try:
+            labels = self.get_labels()
+            for label in labels:
+                if label['name'] == label_name:
+                    return label['id']
+        except HttpError as error:
+            logger.error(f'An error occurred: {error}')
+
+        return None
 
     def get_labels(self):
         """
@@ -159,6 +180,7 @@ class EmailManager:
 
             for label in labels:
                 logger.info(f"Label ID: {label['id']}, Label Name: {label['name']}")
+            return labels
         except HttpError as error:
             logger.error(f'An error occurred: {error}')
 

@@ -45,3 +45,8 @@ DATABASE_URL=postgresql://user:password@localhost/emaildb
 alembic upgrade head
 ```
 
+6. Run the driver script:
+```bash
+python driver.py
+```
+

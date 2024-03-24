@@ -1,0 +1,23 @@
+{
+  "name": "Move any mail from no-reply@youtube.com or me to Youtube-Or-Me",
+  "description": "Rule 1",
+  "collection_predicate": "any",
+  "rules": [
+    {
+      "field_name": "from",
+      "predicate": "contains",
+      "value": "no-reply@youtube.com"
+    },
+    {
+      "field_name": "from",
+      "predicate": "contains",
+      "value": "manibharathitn@gmail.com"
+    }
+  ],
+  "actions": [
+    {
+      "action_name": "move_to_label",
+      "action_value": "Youtube-Or-Me"
+    }
+  ]
+}
